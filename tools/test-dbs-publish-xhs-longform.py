@@ -96,12 +96,33 @@ class XiaohongshuLongformContract(unittest.TestCase):
         self.assertIn("复制即发布", text)
         self.assertIn("每段只按一次回车，不额外插入空白行", text)
 
+    def test_two_modes_share_one_locked_mother_draft(self):
+        text = SKILL.read_text(encoding="utf-8")
+        self.assertIn("先完成并锁定一篇完整母稿", text)
+        self.assertIn("图片内长文和自有配图正文必须逐字一致", text)
+        self.assertIn("没有明确要求精简时", text)
+        self.assertIn("只改变标题、正文小结和字段位置", text)
+        self.assertIn("用户明确要求两个不同版本或不同篇幅时，分别建立母稿", text)
+        self.assertIn("同一母稿输出两种小红书发布形态时", text)
+        self.assertIn("没有因包装方式改变而缩短或重写正文", text)
+
     def _assert_copy_ready(self, parsed):
         for label, value in parsed:
             self.assertEqual(value, value.strip(), label)
             self.assertNotIn("\n\n", value, label)
             self.assertNotRegex(value, r"(?m)^(?:#{1,6}\s|[-*+]\s|---+$)", label)
             self.assertNotRegex(value, r"(?m)\s+$", label)
+
+
+class ShortVideoContract(unittest.TestCase):
+    def test_short_video_has_three_copy_ready_fields(self):
+        text = SKILL.read_text(encoding="utf-8")
+        marker = "短视频逐字稿模式按以下顺序输出"
+        self.assertIn(marker, text)
+        section = text.split(marker, 1)[1].split("小红书自有配图模式", 1)[0]
+        parsed = fields(section)
+        self.assertEqual([label for label, _ in parsed], ["标题", "逐字稿", "话题"])
+        XiaohongshuLongformContract()._assert_copy_ready(parsed)
 
 
 if __name__ == "__main__":
